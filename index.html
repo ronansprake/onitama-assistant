@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Onitama assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="A score calculator for the board game Cascadia, including scoring for one to five players">
+    <link rel="shortcut icon" href="/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --white: #FFFFFF;
+        --neutral-900: #000D1A;
+        --neutral-800: #444B53;
+        --neutral-600: #A1A8AE;
+        --neutral-300: #E5E6E7;
+        --red-400: #F17C7C;
+        --blue-400: #9EC7F0;
+        --green-400: #68D391;
+      }
+      * { font-family: 'Open Sans', serif; font-weight: 600; color: var(--neutral-800); box-sizing: border-box; }
+      body { background-color: #F6F6F6; margin: 0; padding: 40px 0; position: relative; }
+      .wrap { max-width: 440px; padding: 0 20px; margin: 0 auto; display:table; }
+      .hide { text-indent: -99em; position: absolute; left: -9999px; width: 0; height: 0; }
+      .canvas {
+        position: relative;
+        width: 360px;
+        height: 670px;
+      }
+      .card {
+        height: 150px;
+        width: 150px;
+        position: absolute;
+        background: var(--neutral-300);
+        color: var(--neutral-900);
+        text-align: center;
+        transition: all 1s ease-in-out;
+        cursor: pointer;
+      }
+      .grid {
+        border: 1px solid var(--neutral-800);
+        background: var(--white);
+        margin: 0 auto;
+        gap: 0;
+        height: 100px;
+        width: 100px;
+      }
+      .grid .row {
+        display: grid;
+        grid-template-columns: repeat(5, 20px);
+      }
+      .grid .cell {
+        height: 20px;
+        border: 1px solid var(--neutral-800);
+      }
+      .grid .cell.red {
+        background: var(--red-400);
+      }
+      .grid .cell.black {
+        background: var(--neutral-800);
+      }
+      .grid .cell.blue {
+        background: var(--blue-400);
+      }
+      .grid .cell.green {
+        background: var(--green-400);
+      }
+      .card h2 {
+        font-size: 14px;
+        line-height: 24px;
+        margin: 5px 0;
+      }
+      .card[data-position="1"] {
+        top: 20px;
+        left: 20px;
+        transform: rotate(180deg);
+      }
+      .card[data-position="2"] {
+        top: 20px;
+        left: 190px;
+        transform: rotate(180deg);
+      }
+      .card[data-position="3"] {
+        top: 190px;
+        left: 105px;
+        transform: rotate(180deg);
+        opacity: .6;
+      }
+      .card[data-position="4"] {
+        top: 330px;
+        left: 105px;
+        opacity: .6;
+      }
+      .card[data-position="5"] {
+        top: 500px;
+        left: 20px;
+      }
+      .card[data-position="6"] {
+        top: 500px;
+        left: 190px;
+      }
+      .button {
+        padding: 16px 12px;
+        cursor: pointer;
+      }
+      .button[disabled] {
+        opacity: .4;
+      }
+      .undo, .help {
+        position: absolute;
+        top: 50%;
+        margin-top: -32px;
+        left: 20px;
+      }
+      .help {
+        left: auto;
+        right: 20px;
+      }
+      dialog {
+        padding: 20px;
+      }
+      dialog .close {
+        float: right;
+        padding: 6px 12px;
+      }
+      dialog label {
+        margin-left: 10px;
+      }
+      dialog h3 {
+        margin: 30px 0 20px;
+        clear: both;
+      }
+    </style>
+  </head>
+
+  <body data-players="2">
+    <div class="wrap">
+    <h1></h1>
+    <div id="canvas" class="canvas">
+      <div class="card" data-position="1">
+        <h2>Mouse</h2>
+        <div class="grid">
+          <div class="row">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+          </div>
+          <div class="row">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell red"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+          </div>
+          <div class="row">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell black"></div>
+            <div class="cell red"></div>
+            <div class="cell"></div>
+          </div>
+          <div class="row">
+            <div class="cell"></div>
+            <div class="cell red"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+          </div>
+          <div class="row">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" data-position="2">2</div>
+      <div class="card" data-position="3">3</div>
+      <div class="card" data-position="4">4</div>
+      <div class="card" data-position="5">5</div>
+      <div class="card" data-position="6">6</div>
+      <button class="button undo" disabled><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_30_628)"><path d="M4 23L10 23L10 17" stroke="var(--neutral-800)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20.49C16.8404 19.8416 18.4202 18.6127 19.5014 16.9883C20.5826 15.364 21.1066 13.4323 20.9945 11.4843C20.8824 9.53625 20.1402 7.67742 18.8798 6.18787C17.6194 4.69832 15.909 3.65874 14.0064 3.22578C12.1038 2.79281 10.112 2.98991 8.33111 3.78738C6.55025 4.58484 5.0768 5.93947 4.13277 7.64717C3.18874 9.35486 2.82527 11.3231 3.09713 13.2553C3.36898 15.1875 4.26143 16.9791 5.64001 18.36L10 23" stroke="var(--neutral-800)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="clip0_30_628"><rect width="24" height="24" fill="white" transform="translate(0 24) rotate(-90)"/></clipPath></defs></svg></button>
+      <button class="button help"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_30_715)"><path d="M2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12Z" stroke="var(--neutral-800)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 9.09C15.6684 9.3251 16.2319 9.78915 16.5909 10.4C16.9499 11.0108 17.0811 11.7289 16.9613 12.4272C16.8416 13.1255 16.4785 13.7588 15.9365 14.2151C15.3945 14.6713 14.7085 14.9211 14 14.92C12 14.92 11 11.92 11 11.92" stroke="var(--neutral-800)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 12L7 12.01" stroke="var(--neutral-800)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="clip0_30_715"><rect width="24" height="24" fill="white" transform="translate(24) rotate(90)"/></clipPath></defs></svg></button>
+    </div>
+
+    <dialog id="dialog-help">
+        <form method="dialog">
+          <button class="button close" type="submit" class="button-tertiary">close</button>
+          <input type="checkbox" name="expansion-sensei" id="option-expansion-sensei"><label for="option-expansion-sensei">Include Sensei's Path expansion cards</label>
+          <h3>Setup</h3>
+          <p>Each game starts with 5 cards chosen randomly from the 16 game cards (plus optional expansion cards)</p>
+          <p>Each player has 4 pawns and 1 king, arranged in the row closest to them on a 5x5 playing grid (p,p,k,p,p). The middle square (with the king) is called their starting space.</p>
+          <p>Each player has a hand of 2 cards. One card each round is a spare.</p>
+          <h3>Gameplay</h3>
+          <p>Players alternate turns until the game has ended. On a player's turn, they select one of their two cards, determining where they can move one of their pieces.</p>
+          <p>For example, the Ox card lets the player move a piece either: one square forward, one square right, one square behind. Card moves are relative to the player's perspective, so the card will rotate 180 degrees when the opponent has it.</p>
+          <p>Pieces can be moved to any square that is not occupied by a same coloured piece. The played card then switches with the spare card.</p>
+          <p>If a piece is moved to the same square as an opponent's piece, the opponent's piece is captured and removed from the game.</p>
+          <p>If you have no moves that you can legally make, you instead will discard a card, playing it and not moving a pieces.</p>
+          <p>If you can play a move, you cannot discard.</p>
+          <h3>Winning</h3>
+          <p>The game can be won in one of two ways: a king is captured, or a player moves their king to the opposite starting space.</p>
+        </form>
+    </dialog>
+    <script>
+      const body = document.querySelector("body");
+      const cards = document.querySelectorAll(".card");
+      const dialogHelp = document.getElementById('dialog-help');
+      const optionExpansionSensei = document.getElementById('option-expansion-sensei');
+      
+      const undoButton = document.querySelector(".undo");
+      const helpButton = document.querySelector(".help");
+
+      helpButton.addEventListener('click', (event) => {
+          dialogHelp.showModal();
+      });
+
+      var activePlayer = getStartingPlayer();
+      var lastMovedCard = [];
+
+      const deck = [
+        {
+          name: 'Tiger',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,2,0,0],
+                [0,0,0,0,0],
+                [0,0,1,0,0],
+                [0,0,2,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Crab',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [2,0,1,0,2],
+                [0,0,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Monkey',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,2,0],
+                [0,0,1,0,0],
+                [0,2,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Crane',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [0,0,1,0,0],
+                [0,2,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Dragon',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [2,0,0,0,2],
+                [0,0,1,0,0],
+                [0,2,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Elephant',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,2,0],
+                [0,2,1,2,0],
+                [0,0,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Mantis',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,2,0],
+                [0,0,1,0,0],
+                [0,0,2,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Boar',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [0,2,1,2,0],
+                [0,0,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Frog',
+          colour: 'blue',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,0,0],
+                [2,0,1,0,0],
+                [0,0,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Goose',
+          colour: 'blue',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,0,0],
+                [0,2,1,2,0],
+                [0,0,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Horse',
+          colour: 'blue',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [0,2,1,0,0],
+                [0,0,2,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Eel',
+          colour: 'blue',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,0,0],
+                [0,0,1,2,0],
+                [0,2,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Rabbit',
+          colour: 'red',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,0,2,0],
+                [0,0,1,0,2],
+                [0,2,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Rooster',
+          colour: 'red',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,0,2,0],
+                [0,2,1,2,0],
+                [0,2,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Ox',
+          colour: 'red',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,0,2,0],
+                [0,2,1,0,0],
+                [0,0,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Cobra',
+          colour: 'red',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [2,0,0,0,2],
+                [0,0,1,0,0],
+                [0,2,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        }
+      ];
+
+      const deckSensei = [
+        {
+          name: 'Giraffe',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [2,0,0,0,2],
+                [0,0,1,0,0],
+                [0,0,2,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Kirin',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,2,0,2,0],
+                [0,0,0,0,0],
+                [0,0,1,0,0],
+                [0,0,0,0,0],
+                [0,0,2,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Phoenix',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,2,0],
+                [2,0,1,0,2],
+                [0,0,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Turtle',
+          colour: 'green',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,0,0,0],
+                [2,0,1,0,2],
+                [0,2,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Fox',
+          colour: 'red',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,0,2,0],
+                [0,0,1,2,0],
+                [0,0,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Panda',
+          colour: 'red',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,2,0],
+                [0,0,1,0,0],
+                [0,2,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Sea snake',
+          colour: 'red',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [0,0,1,0,2],
+                [0,2,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Mouse',
+          colour: 'red',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [0,0,1,2,0],
+                [0,2,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Tanuki',
+          colour: 'red',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,2],
+                [0,0,1,0,0],
+                [0,2,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Sable',
+          colour: 'red',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,0,2,0],
+                [2,0,1,0,0],
+                [0,2,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Dog',
+          colour: 'blue',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,0,0],
+                [0,2,1,0,0],
+                [0,2,0,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Bear',
+          colour: 'blue',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,2,0,0],
+                [0,0,1,0,0],
+                [0,0,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Viper',
+          colour: 'blue',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [2,0,1,0,0],
+                [0,0,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Rat',
+          colour: 'blue',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [0,2,1,0,0],
+                [0,0,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Iguana',
+          colour: 'blue',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [2,0,2,0,0],
+                [0,0,1,0,0],
+                [0,0,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Otter',
+          colour: 'blue',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,0,0],
+                [0,0,1,0,2],
+                [0,0,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+      ];
+
+      renderCards();
+
+      if (window.localStorage.getItem("expansion-sensei") == 'true') {
+        optionExpansionSensei.checked = true;
+      }
+
+      // Expansion option
+      optionExpansionSensei.addEventListener('click', (e) => {
+        if (optionExpansionSensei.checked == true) {
+          window.localStorage.setItem("expansion-sensei", 'true');
+        } else {
+          window.localStorage.setItem("expansion-sensei", 'false');
+        }
+        renderCards();
+      });
+
+      function renderCards() {
+
+        var gameDeck = deck.slice();
+
+        if (window.localStorage.getItem("expansion-sensei") == 'true') {
+          gameDeck = deck.concat(deckSensei);
+        }
+
+        shuffle(gameDeck);
+
+        if (activePlayer == 1) {
+          var cards = [1,2,3,5,6];
+          if (document.querySelector(".card[data-position='4']").style.display != 'none') {
+            document.querySelector(".card[data-position='4']").style.display = 'none';
+          }
+        } else {
+          var cards = [1,2,4,5,6];
+          if (document.querySelector(".card[data-position='3']").style.display != 'none') {
+            document.querySelector(".card[data-position='3']").style.display = 'none';
+          }
+        }
+        cards.forEach((card, index) => {
+          var card = document.querySelector(".card[data-position='" + card + "']");
+          var html = '<h2>' + gameDeck[0].name + '</h2>';
+          gameDeck[0].content.grids.forEach((grid, index) => {
+            html += '<div class="grid">';
+            grid.forEach((row, index) => {
+              html += '<div class="row">';
+            row.forEach((cell, index) => {
+              if (cell == 1) {
+                html += '<div class="cell black">';
+              } else if (cell == 2) {
+                html += '<div class="cell ' + gameDeck[0].colour + '">';
+              } else {
+                html += '<div class="cell">';
+              }
+              html += '</div>';
+            });
+              html += '</div>';
+            });
+            html += '</div>';
+          });
+          card.innerHTML = html;
+          gameDeck.shift();
+        });
+      }
+
+      function shuffle(array) {
+        let currentIndex = array.length;
+
+        // While there remain elements to shuffle...
+        while (currentIndex != 0) {
+
+          // Pick a remaining element...
+          let randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex--;
+
+          // And swap it with the current element.
+          [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+        }
+      }
+
+      // Card selection
+      cards.forEach((card) => {
+        card.addEventListener('click', (e) => {
+          if ((activePlayer == 1 && (card.dataset.position == 1 || card.dataset.position == 2)) || (activePlayer == 2 && (card.dataset.position == 5 || card.dataset.position == 6))) {
+            moveCard(card.dataset.position);
+          }
+          e.preventDefault();
+          e.stopPropagation();
+        });
+      });
+
+      // Undo action
+      undoButton.addEventListener('click', (e) => {
+        moveCard(lastMovedCard[0], true);
+        lastMovedCard.shift();
+        if (lastMovedCard.length == 0) {
+          undoButton.disabled = true;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      // Move the selected card
+      function moveCard(position, undo = false) {
+        var card1 = document.querySelector(".card[data-position='1']");
+        var card2 = document.querySelector(".card[data-position='2']");
+        var card3 = document.querySelector(".card[data-position='3']");
+        var card4 = document.querySelector(".card[data-position='4']");
+        var card5 = document.querySelector(".card[data-position='5']");
+        var card6 = document.querySelector(".card[data-position='6']");
+
+        if (position == 1) {
+          if (undo == false) {
+            card1.dataset.position = 4;
+            card3.dataset.position = 1;
+          } else {
+            card4.dataset.position = 1;
+            card1.dataset.position = 3;
+          }
+        }
+        if (position == 2) {
+          if (undo == false) {
+            card2.dataset.position = 4;
+            card3.dataset.position = 2;
+          } else {
+            card4.dataset.position = 2;
+            card2.dataset.position = 3;
+          }
+        }
+        if (position == 5) {
+          if (undo == false) {
+            card5.dataset.position = 3;
+            card4.dataset.position = 5;
+          } else {
+            card3.dataset.position = 5;
+            card5.dataset.position = 4;
+          }
+        }
+        if (position == 6) {
+          if (undo == false) {
+            card6.dataset.position = 3;
+            card4.dataset.position = 6;
+          } else {
+            card3.dataset.position = 6;
+            card6.dataset.position = 4;
+          }
+        }
+
+        if (activePlayer == 1) {
+          activePlayer = 2;
+        } else {
+          activePlayer = 1;
+        }
+
+        if (undo == false) {
+          lastMovedCard.unshift(position);
+        }
+        undoButton.disabled = false;
+      }
+
+      // Used to determine starting player
+      function getRandomInt(min, max) {
+        var num = Math.floor(Math.random() * max) + min;
+        return num;
+      }
+
+      // Determine who starts the game
+      function getStartingPlayer() {
+        if (getRandomInt(0, 10) % 2 == 0) {
+          return 1;
+        }
+        return 2;
+      }
+    </script>
+  </body>
+</html>
