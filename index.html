@@ -31,7 +31,7 @@
         align-self: center;
       }
       .card {
-        height: 190px;
+        height: 208px;
         width: 190px;
         position: absolute;
         background: var(--neutral-300);
@@ -40,12 +40,15 @@
         transition: all 1s ease-in-out;
         cursor: pointer;
       }
+      .or {
+        display: block;
+        font-size: 12px;
+        line-height: 20px;
+      }
       .grid {
-        border: 1px solid var(--neutral-800);
         background: var(--white);
         margin: 0 auto;
         gap: 0;
-        height: 140px;
         width: 140px;
       }
       .grid .row {
@@ -55,6 +58,21 @@
       .grid .cell {
         height: 28px;
         border: 1px solid var(--neutral-800);
+      }
+      .grid .cell svg {
+        margin-top: 4px;
+      }
+      .grid .cell:first-child {
+        border-left-width: 2px;
+      }
+      .grid .cell:last-child {
+        border-right-width: 2px;
+      }
+      .grid .row:first-child .cell {
+        border-top-width: 2px;
+      }
+      .grid .row:last-child .cell {
+        border-bottom-width: 2px;
       }
       .grid .cell.red {
         background: var(--red-400);
@@ -84,13 +102,13 @@
         transform: rotate(180deg);
       }
       .card[data-position="3"] {
-        top: 230px;
+        top: 248px;
         left: 125px;
         transform: rotate(180deg);
         opacity: .6;
       }
       .card[data-position="4"] {
-        top: 410px;
+        top: 392px;
         left: 125px;
         opacity: .6;
       }
@@ -152,7 +170,8 @@
     <dialog id="dialog-help">
         <form method="dialog">
           <button class="button close" type="submit" class="button-tertiary">close</button>
-          <input type="checkbox" name="expansion-sensei" id="option-expansion-sensei"><label for="option-expansion-sensei">Include Sensei's Path expansion cards</label>
+          <div><input type="checkbox" checked name="expansion-sensei" id="option-expansion-sensei"><label for="option-expansion-sensei">Include Sensei's Path expansion cards</label></div>
+          <div><input type="checkbox" checked name="promos" id="option-expansion-promos"><label for="option-expansion-promos">Include promo cards</label></div>
           <h3>Setup</h3>
           <p>Each game starts with 5 cards chosen randomly from the 16 game cards (plus optional expansion cards)</p>
           <p>Each player has 4 pawns and 1 king, arranged in the row closest to them on a 5x5 playing grid (p,p,k,p,p). The middle square (with the king) is called their starting space.</p>
@@ -173,6 +192,7 @@
       const cards = document.querySelectorAll(".card");
       const dialogHelp = document.getElementById('dialog-help');
       const optionExpansionSensei = document.getElementById('option-expansion-sensei');
+      const optionExpansionPromos = document.getElementById('option-expansion-promos');
       
       const undoButton = document.querySelector(".undo");
       const helpButton = document.querySelector(".help");
@@ -188,6 +208,7 @@
         {
           name: 'Tiger',
           colour: 'green',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -204,6 +225,7 @@
         {
           name: 'Crab',
           colour: 'green',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -220,6 +242,7 @@
         {
           name: 'Monkey',
           colour: 'green',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -236,6 +259,7 @@
         {
           name: 'Crane',
           colour: 'green',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -252,6 +276,7 @@
         {
           name: 'Dragon',
           colour: 'green',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -268,6 +293,7 @@
         {
           name: 'Elephant',
           colour: 'green',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -284,6 +310,7 @@
         {
           name: 'Mantis',
           colour: 'green',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -300,6 +327,7 @@
         {
           name: 'Boar',
           colour: 'green',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -316,6 +344,7 @@
         {
           name: 'Frog',
           colour: 'blue',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -332,6 +361,7 @@
         {
           name: 'Goose',
           colour: 'blue',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -348,6 +378,7 @@
         {
           name: 'Horse',
           colour: 'blue',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -364,6 +395,7 @@
         {
           name: 'Eel',
           colour: 'blue',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -380,6 +412,7 @@
         {
           name: 'Rabbit',
           colour: 'red',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -396,6 +429,7 @@
         {
           name: 'Rooster',
           colour: 'red',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -412,6 +446,7 @@
         {
           name: 'Ox',
           colour: 'red',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -428,6 +463,7 @@
         {
           name: 'Cobra',
           colour: 'red',
+          deck: 'base',
           content: {
             type: 'basic',
             grids: [
@@ -447,6 +483,7 @@
         {
           name: 'Giraffe',
           colour: 'green',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -463,6 +500,7 @@
         {
           name: 'Kirin',
           colour: 'green',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -479,6 +517,7 @@
         {
           name: 'Phoenix',
           colour: 'green',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -495,6 +534,7 @@
         {
           name: 'Turtle',
           colour: 'green',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -511,6 +551,7 @@
         {
           name: 'Fox',
           colour: 'red',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -527,6 +568,7 @@
         {
           name: 'Panda',
           colour: 'red',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -543,6 +585,7 @@
         {
           name: 'Sea snake',
           colour: 'red',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -559,6 +602,7 @@
         {
           name: 'Mouse',
           colour: 'red',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -575,6 +619,7 @@
         {
           name: 'Tanuki',
           colour: 'red',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -591,6 +636,7 @@
         {
           name: 'Sable',
           colour: 'red',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -607,6 +653,7 @@
         {
           name: 'Dog',
           colour: 'blue',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -623,6 +670,7 @@
         {
           name: 'Bear',
           colour: 'blue',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -639,6 +687,7 @@
         {
           name: 'Viper',
           colour: 'blue',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -655,6 +704,7 @@
         {
           name: 'Rat',
           colour: 'blue',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -671,6 +721,7 @@
         {
           name: 'Iguana',
           colour: 'blue',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -687,6 +738,7 @@
         {
           name: 'Otter',
           colour: 'blue',
+          deck: 'expansion',
           content: {
             type: 'basic',
             grids: [
@@ -702,30 +754,246 @@
         },
       ];
 
-      renderCards();
+      const deckPromos = [
+        {
+          name: 'Hornet',
+          colour: 'red',
+          deck: 'promo',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [0,0,1,2,0],
+                [0,0,0,0,0],
+                [2,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Centipede',
+          colour: 'blue',
+          deck: 'promo',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [0,2,1,0,0],
+                [0,0,0,0,0],
+                [0,0,0,0,2]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Steer',
+          colour: 'green',
+          deck: 'promo',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,0,0,0],
+                [0,2,1,2,0],
+                [0,2,0,2,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Lobster',
+          colour: 'green',
+          deck: 'promo',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,2,0],
+                [0,0,1,0,0],
+                [0,0,0,0,0],
+                [0,2,0,2,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Cat',
+          colour: 'red',
+          deck: 'promo',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [0,2,1,0,2],
+                [0,0,0,0,0],
+                [0,0,2,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Serow',
+          colour: 'blue',
+          deck: 'promo',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,2,0,0],
+                [2,0,1,2,0],
+                [0,0,0,0,0],
+                [0,0,2,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Mejika',
+          colour: 'green',
+          deck: 'promo',
+          content: {
+            type: 'or',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [2,0,0,0,2],
+                [0,0,3,0,0]
+              ],
+              [
+                [0,0,2,0,0],
+                [0,0,4,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Okija',
+          colour: 'green',
+          deck: 'promo',
+          content: {
+            type: 'or',
+            grids: [
+              [
+                [0,0,2,0,0],
+                [0,0,3,0,0]
+              ],
+              [
+                [2,0,0,0,2],
+                [0,0,0,0,0],
+                [0,0,4,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Kumo',
+          colour: 'green',
+          deck: 'promo',
+          content: {
+            type: 'or',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,2,0],
+                [0,0,3,0,0]
+              ],
+              [
+                [0,0,0,0,0],
+                [2,0,4,0,2]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Sasori',
+          colour: 'green',
+          deck: 'promo',
+          content: {
+            type: 'or',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [2,0,3,0,2]
+              ],
+              [
+                [0,2,0,2,0],
+                [0,0,0,0,0],
+                [0,0,4,0,0]
+              ]
+            ]
+          }
+        },
+      ]
 
       if (window.localStorage.getItem("expansion-sensei") == 'true') {
         optionExpansionSensei.checked = true;
+      } else {
+        optionExpansionSensei.checked = false;
       }
+
+      if (window.localStorage.getItem("expansion-promos") == 'true') {
+        optionExpansionPromos.checked = true;
+      } else {
+        optionExpansionPromos.checked = false;
+      }
+
+      setExpansions();
+
+      renderCards();
 
       // Expansion option
       optionExpansionSensei.addEventListener('click', (e) => {
-        if (optionExpansionSensei.checked == true) {
-          window.localStorage.setItem("expansion-sensei", 'true');
-        } else {
-          window.localStorage.setItem("expansion-sensei", 'false');
-        }
+        setExpansions();
         lastMovedCard = [];
         undoButton.disabled = true;
         renderCards();
       });
 
+      // Promos option
+      optionExpansionPromos.addEventListener('click', (e) => {
+        setExpansions();
+        lastMovedCard = [];
+        undoButton.disabled = true;
+        renderCards();
+      });
+
+      function setExpansions() {
+        if (optionExpansionPromos.checked == true) {
+          window.localStorage.setItem("expansion-promos", 'true');
+        } else {
+          window.localStorage.setItem("expansion-promos", 'false');
+        }
+        if (optionExpansionSensei.checked == true) {
+          window.localStorage.setItem("expansion-sensei", 'true');
+        } else {
+          window.localStorage.setItem("expansion-sensei", 'false');
+        }
+      }
+
       function renderCards() {
 
         var gameDeck = deck.slice();
 
+        if (window.localStorage.getItem("expansion-promos") == 'true') {
+          gameDeck = deck.concat(deckPromos);
+        }
+
         if (window.localStorage.getItem("expansion-sensei") == 'true') {
           gameDeck = deck.concat(deckSensei);
+
+          if (window.localStorage.getItem("expansion-promos") == 'true') {
+            gameDeck = gameDeck.concat(deckPromos);
+          }
         }
 
         shuffle(gameDeck);
@@ -745,7 +1013,10 @@
           var card = document.querySelector(".card[data-position='" + card + "']");
           var html = '<h2>' + gameDeck[0].name + '</h2>';
           gameDeck[0].content.grids.forEach((grid, index) => {
-            html += '<div class="grid">';
+            if (index == 1) {
+              html += '<b class="or">or</b>';
+            }
+            html += '<div class="grid grid-' + (index + 1) + '">';
             grid.forEach((row, index) => {
               html += '<div class="row">';
             row.forEach((cell, index) => {
@@ -753,6 +1024,10 @@
                 html += '<div class="cell black">';
               } else if (cell == 2) {
                 html += '<div class="cell ' + gameDeck[0].colour + '">';
+              } else if (cell == 3) {
+                html += '<div class="cell"><svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.73438 7C7.64688 6.425 8.25 5.40937 8.25 4.25C8.25 2.45625 6.79375 1 5 1C3.20625 1 1.75 2.45625 1.75 4.25C1.75 5.40937 2.35625 6.425 3.26562 7H3C2.44687 7 2 7.44687 2 8C2 8.51562 2.39062 8.9375 2.89062 8.99375L2.5 12.5H7.5L7.10938 8.99375C7.60938 8.9375 8 8.51562 8 8C8 7.44687 7.55313 7 7 7H6.73438ZM0.70625 14.7937C0.575 14.925 0.5 15.1062 0.5 15.2937C0.5 15.6844 0.815625 16 1.20625 16H8.79062C9.18125 16 9.49687 15.6844 9.49687 15.2937C9.49687 15.1062 9.42187 14.925 9.29062 14.7937L8 13.5H2L0.70625 14.7937Z" fill="black"/></svg>';
+              } else if (cell == 4) {
+                html += '<div class="cell"><svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_37_759)"><path d="M7 0C7.55313 0 8 0.446875 8 1V1.5H8.5C9.05313 1.5 9.5 1.94687 9.5 2.5C9.5 3.05313 9.05313 3.5 8.5 3.5H8V5H12.75C13.4406 5 14 5.55937 14 6.25C14 6.41563 13.9687 6.57812 13.9031 6.73125L11.5 12.5H2.5L0.096875 6.73125C0.03125 6.57812 0 6.41563 0 6.25C0 5.55937 0.559375 5 1.25 5H6V3.5H5.5C4.94687 3.5 4.5 3.05313 4.5 2.5C4.5 1.94687 4.94687 1.5 5.5 1.5H6V1C6 0.446875 6.44687 0 7 0ZM1.20625 14.7937L2.5 13.5H11.5L12.7937 14.7937C12.925 14.925 13 15.1062 13 15.2937C13 15.6844 12.6844 16 12.2937 16H1.70625C1.31562 16 1 15.6844 1 15.2937C1 15.1062 1.075 14.925 1.20625 14.7937Z" fill="black"/></g><defs><clipPath id="clip0_37_759"><rect width="14" height="16" fill="white"/></clipPath></defs></svg>';
               } else {
                 html += '<div class="cell">';
               }
