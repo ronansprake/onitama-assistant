@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title></title>
+    <title>Onitama assistant</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description" content="A score calculator for the board game Cascadia, including scoring for one to five players">
+    <meta name="description" content="A card assistant for the board game Onitama">
     <link rel="shortcut icon" href="/images/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +37,7 @@
         background: var(--neutral-300);
         color: var(--neutral-900);
         text-align: center;
-        transition: all 1s ease-in-out;
+        transition: all .6s ease-in-out;
         cursor: pointer;
       }
       .or {
@@ -111,16 +111,16 @@
         opacity: .6;
       }
       .card[data-position="4"] {
-        top: calc(100dvh - 456px);
+        top: calc(100vh - 456px);
         left: 125px;
         opacity: .6;
       }
       .card[data-position="5"] {
-        top: calc(100dvh - 228px);
+        top: calc(100vh - 228px);
         left: 20px;
       }
       .card[data-position="6"] {
-        top: calc(100dvh - 228px);
+        top: calc(100vh - 228px);
         left: 230px;
       }
       .button {
@@ -186,18 +186,19 @@
           <label><input type="checkbox" checked name="expansion-sensei" id="option-expansion-sensei"><span>Include Sensei's Path expansion cards</span></label>
           <label><input type="checkbox" checked name="promos" id="option-expansion-promos"><span>Include promo cards</span></label>
           <h2>Setup</h2>
-          <p>Each game starts with 5 cards chosen randomly from the 16 game cards (plus optional expansion cards)</p>
+          <p>Each game starts with 5 cards chosen randomly from the 16 game cards (plus optional expansion and promo cards)</p>
           <p>Each player has 4 pawns and 1 king, arranged in the row closest to them on a 5x5 playing grid (p,p,k,p,p). The middle square (with the king) is called their starting space.</p>
-          <p>Each player has a hand of 2 cards. One card each round is a spare.</p>
+          <p>Each player gets two cards (the fifth card is called the "spare").</p>
           <h2>Gameplay</h2>
           <p>Players alternate turns until the game has ended. On a player's turn, they select one of their two cards, determining where they can move one of their pieces.</p>
-          <p>For example, the Ox card lets the player move a piece either: one square forward, one square right, one square behind. Card moves are relative to the player's perspective, so the card will rotate 180 degrees when the opponent has it.</p>
+          <p>For example, the Ox card lets the player move a piece either: one square forwards, one square right or one square backwards. Card moves are relative to the player's perspective, so the card will rotate 180 degrees when the opponent has it.</p>
           <p>Pieces can be moved to any square that is not occupied by a same coloured piece. The played card then switches with the spare card.</p>
           <p>If a piece is moved to the same square as an opponent's piece, the opponent's piece is captured and removed from the game.</p>
-          <p>If you have no moves that you can legally make, you instead will discard a card, playing it and not moving a pieces.</p>
+          <h2>Discard</h2>
+          <p>If you have no moves that you can legally make, you instead will discard a card, playing it and not moving a piece.</p>
           <p>If you can play a move, you cannot discard.</p>
           <h2>Winning</h2>
-          <p>The game can be won in one of two ways: a king is captured, or a player moves their king to the opposite starting space.</p>
+          <p>The game can be won in one of two ways: a king is captured, or a player moves their king to the opposite player's starting space.</p>
         </form>
     </dialog>
     <script>
