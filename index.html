@@ -2,13 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Onitama assistant</title>
+    <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta name="description" content="A score calculator for the board game Cascadia, including scoring for one to five players">
     <link rel="shortcut icon" href="/images/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: "Urbane", sans-serif;
+            font-display: swap;
+            src: url(/urbane-demi-bold.woff2);
+            font-style: normal;
+        }
+    </style>
+
     <style>
       :root {
         --white: #FFFFFF;
@@ -21,17 +30,19 @@
         --green-400: #68D391;
       }
       * { font-family: 'Open Sans', serif; font-weight: 600; color: var(--neutral-800); box-sizing: border-box; }
-      body { background-color: #F6F6F6; margin: 0; padding: 40px 0; position: relative; }
-      .wrap { max-width: 440px; padding: 0 20px; margin: 0 auto; display:table; }
+      html, body {height: 100%;}
+      body { background-color: #F6F6F6; margin: 0; position: relative; }
+      .wrap { max-width: 440px; margin: 0 auto; display: flex; justify-content: center; height: 100%; }
       .hide { text-indent: -99em; position: absolute; left: -9999px; width: 0; height: 0; }
       .canvas {
         position: relative;
-        width: 360px;
-        height: 670px;
+        width: 440px;
+        height: 830px;
+        align-self: center;
       }
       .card {
-        height: 150px;
-        width: 150px;
+        height: 190px;
+        width: 190px;
         position: absolute;
         background: var(--neutral-300);
         color: var(--neutral-900);
@@ -44,15 +55,15 @@
         background: var(--white);
         margin: 0 auto;
         gap: 0;
-        height: 100px;
-        width: 100px;
+        height: 140px;
+        width: 140px;
       }
       .grid .row {
         display: grid;
-        grid-template-columns: repeat(5, 20px);
+        grid-template-columns: repeat(5, 28px);
       }
       .grid .cell {
-        height: 20px;
+        height: 28px;
         border: 1px solid var(--neutral-800);
       }
       .grid .cell.red {
@@ -79,27 +90,27 @@
       }
       .card[data-position="2"] {
         top: 20px;
-        left: 190px;
+        left: 230px;
         transform: rotate(180deg);
       }
       .card[data-position="3"] {
-        top: 190px;
-        left: 105px;
+        top: 230px;
+        left: 125px;
         transform: rotate(180deg);
         opacity: .6;
       }
       .card[data-position="4"] {
-        top: 330px;
-        left: 105px;
+        top: 410px;
+        left: 125px;
         opacity: .6;
       }
       .card[data-position="5"] {
-        top: 500px;
+        top: 620px;
         left: 20px;
       }
       .card[data-position="6"] {
-        top: 500px;
-        left: 190px;
+        top: 620px;
+        left: 230px;
       }
       .button {
         padding: 16px 12px;
@@ -135,9 +146,8 @@
     </style>
   </head>
 
-  <body data-players="2">
+  <body>
     <div class="wrap">
-    <h1></h1>
     <div id="canvas" class="canvas">
       <div class="card" data-position="1">
         <h2>Mouse</h2>
@@ -754,6 +764,8 @@
         } else {
           window.localStorage.setItem("expansion-sensei", 'false');
         }
+        lastMovedCard = [];
+        undoButton.disabled = true;
         renderCards();
       });
 
@@ -769,13 +781,13 @@
 
         if (activePlayer == 1) {
           var cards = [1,2,3,5,6];
-          if (document.querySelector(".card[data-position='4']").style.display != 'none') {
-            document.querySelector(".card[data-position='4']").style.display = 'none';
+          if (document.querySelector(".card[data-position='4']")) {
+            document.querySelector(".card[data-position='4']").remove();
           }
         } else {
           var cards = [1,2,4,5,6];
-          if (document.querySelector(".card[data-position='3']").style.display != 'none') {
-            document.querySelector(".card[data-position='3']").style.display = 'none';
+          if (document.querySelector(".card[data-position='3']")) {
+            document.querySelector(".card[data-position='3']").remove();
           }
         }
         cards.forEach((card, index) => {
