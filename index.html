@@ -145,7 +145,7 @@
       }
       .timer {
         position: absolute;
-        top: calc(100dvh - 520px);
+        top: calc(100dvh - 530px);
         left: 50%;
         margin-left: -100px;
         width: 200px;
@@ -161,7 +161,7 @@
         color: red;
       }
       .timer[data-position="2"] {
-        top: calc(100dvh - 440px);
+        top: calc(100dvh - 430px);
         transform: rotate(180deg);
       }
       dialog {
@@ -1074,7 +1074,7 @@
         }
 
         if (window.localStorage.getItem("timer") == 'true') {
-          startTimer(2, timer);
+          startTimer(60, timer);
         } else {
           stopTimer(timer);
         }
@@ -1089,12 +1089,7 @@
 
         clearInterval(timerCounter);
 
-        minutes = parseInt(timer / 60, 10)
-        seconds = parseInt(timer % 60, 10);
-
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-
-        timerElement.textContent = minutes + ":" + seconds;
+        tickTimer(timer, timerElement);
 
         timerCounter = setInterval(function () {
 
@@ -1104,20 +1099,25 @@
             --timer;
           }
 
-          minutes = parseInt((timer) / 60, 10)
-          seconds = parseInt((timer) % 60, 10);
+          tickTimer(timer, timerElement);
 
-          seconds = seconds < 10 ? "0" + seconds : seconds;
-
-          if (timer < 10) {
-            timerElement.classList.add("orange");
-            timerElement.classList.add("red");
-          } else if (timer < 20) {
-            timerElement.classList.remove("orange");
-          }
-
-          timerElement.textContent = minutes + ":" + seconds;
         }, 1000);
+      }
+
+      function tickTimer(timer, timerElement) {
+        minutes = parseInt((timer) / 60, 10)
+        seconds = parseInt((timer) % 60, 10);
+
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        if (timer < 10) {
+          timerElement.classList.add("orange");
+          timerElement.classList.add("red");
+        } else if (timer < 20) {
+          timerElement.classList.remove("orange");
+        }
+
+        timerElement.textContent = minutes + ":" + seconds;
       }
 
       function stopTimer(timerElement) {
