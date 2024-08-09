@@ -1236,7 +1236,6 @@
         var card5 = document.querySelector(".card[data-position='5']");
         var card6 = document.querySelector(".card[data-position='6']");
 
-        timer.style.display = "none";
         setTimer();
 
         if (position == 1) {
@@ -1294,8 +1293,6 @@
           lastMovedCard.unshift(position);
         }
         undoButton.disabled = false;
-
-        timer.style.display = "block";
       }
 
       // Used to determine starting player
