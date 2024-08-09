@@ -143,6 +143,27 @@
         left: auto;
         right: 20px;
       }
+      .timer {
+        position: absolute;
+        top: calc(100dvh - 520px);
+        left: 50%;
+        margin-left: -100px;
+        width: 200px;
+        text-align: center;
+        font-size: 48px;
+        line-height: 24px;
+        transition: all .6s;
+      }
+      .timer.orange {
+        color: orange;
+      }
+      .timer.red {
+        color: red;
+      }
+      .timer[data-position="2"] {
+        top: calc(100dvh - 440px);
+        transform: rotate(180deg);
+      }
       dialog {
         padding: 20px;
       }
@@ -175,6 +196,7 @@
       <div class="card" data-position="4"></div>
       <div class="card" data-position="5"></div>
       <div class="card" data-position="6"></div>
+      <div id ="timer" class="timer" data-position="1"></div>
       <button class="button undo" disabled><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_30_628)"><path d="M4 23L10 23L10 17" stroke="var(--neutral-800)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20.49C16.8404 19.8416 18.4202 18.6127 19.5014 16.9883C20.5826 15.364 21.1066 13.4323 20.9945 11.4843C20.8824 9.53625 20.1402 7.67742 18.8798 6.18787C17.6194 4.69832 15.909 3.65874 14.0064 3.22578C12.1038 2.79281 10.112 2.98991 8.33111 3.78738C6.55025 4.58484 5.0768 5.93947 4.13277 7.64717C3.18874 9.35486 2.82527 11.3231 3.09713 13.2553C3.36898 15.1875 4.26143 16.9791 5.64001 18.36L10 23" stroke="var(--neutral-800)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="clip0_30_628"><rect width="24" height="24" fill="white" transform="translate(0 24) rotate(-90)"/></clipPath></defs></svg></button>
       <button class="button help"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_30_715)"><path d="M2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12Z" stroke="var(--neutral-800)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 9.09C15.6684 9.3251 16.2319 9.78915 16.5909 10.4C16.9499 11.0108 17.0811 11.7289 16.9613 12.4272C16.8416 13.1255 16.4785 13.7588 15.9365 14.2151C15.3945 14.6713 14.7085 14.9211 14 14.92C12 14.92 11 11.92 11 11.92" stroke="var(--neutral-800)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 12L7 12.01" stroke="var(--neutral-800)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="clip0_30_715"><rect width="24" height="24" fill="white" transform="translate(24) rotate(90)"/></clipPath></defs></svg></button>
     </div>
@@ -183,8 +205,9 @@
         <form method="dialog">
           <button class="button close" type="submit" class="button-tertiary">Close</button>
           <h2>Options</h2>
-          <label><input type="checkbox" checked name="expansion-sensei" id="option-expansion-sensei"><span>Include Sensei's Path expansion cards</span></label>
-          <label><input type="checkbox" checked name="promos" id="option-expansion-promos"><span>Include promo cards</span></label>
+          <label><input type="checkbox" name="timer" id="option-timer"><span>Timer</span></label>
+          <label><input type="checkbox" checked name="expansion-sensei" id="option-expansion-sensei"><span>Add Sensei's Path cards (<a href="https://boardgamegeek.com/image/3799617/onitama-senseis-path" target="_blank">see cards</a>)</span></label>
+          <label><input type="checkbox" checked name="promos" id="option-expansion-promos"><span>Add promo cards (<a href="https://boardgamegeek.com/boardgame/160477/onitama/expansions" target="_blank">see cards</a>)</span></label>
           <h2>Setup</h2>
           <p>Each game starts with 5 cards chosen randomly from the 16 game cards (plus optional expansion and promo cards)</p>
           <p>Each player has 4 pawns and 1 king, arranged in the row closest to them on a 5x5 playing grid (p,p,k,p,p). The middle square (with the king) is called their starting space.</p>
@@ -205,8 +228,10 @@
       const body = document.querySelector("body");
       const cards = document.querySelectorAll(".card");
       const dialogHelp = document.getElementById('dialog-help');
+      const timer = document.getElementById('timer');
       const optionExpansionSensei = document.getElementById('option-expansion-sensei');
       const optionExpansionPromos = document.getElementById('option-expansion-promos');
+      const optionTimer = document.getElementById('option-timer');
       
       const undoButton = document.querySelector(".undo");
       const helpButton = document.querySelector(".help");
@@ -217,6 +242,7 @@
 
       var activePlayer = getStartingPlayer();
       var lastMovedCard = [];
+      var timerCounter;
 
       const deck = [
         {
@@ -770,6 +796,40 @@
 
       const deckPromos = [
         {
+          name: 'Goat',
+          colour: 'red',
+          deck: 'promo',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,0,0,2,0],
+                [0,2,1,0,0],
+                [0,0,2,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
+          name: 'Sheep',
+          colour: 'blue',
+          deck: 'promo',
+          content: {
+            type: 'basic',
+            grids: [
+              [
+                [0,0,0,0,0],
+                [0,2,0,0,0],
+                [0,0,1,2,0],
+                [0,0,2,0,0],
+                [0,0,0,0,0]
+              ]
+            ]
+          }
+        },
+        {
           name: 'Hornet',
           colour: 'red',
           deck: 'promo',
@@ -961,7 +1021,14 @@
         optionExpansionPromos.checked = false;
       }
 
+      if (window.localStorage.getItem("timer") == 'true') {
+        optionTimer.checked = true;
+      } else {
+        optionTimer.checked = false;
+      }
+
       setExpansions();
+      setTimer();
 
       renderCards();
 
@@ -981,6 +1048,11 @@
         renderCards();
       });
 
+      // Timer option
+      optionTimer.addEventListener('click', (e) => {
+        setTimer();
+      });
+
       function setExpansions() {
         if (optionExpansionPromos.checked == true) {
           window.localStorage.setItem("expansion-promos", 'true');
@@ -992,6 +1064,62 @@
         } else {
           window.localStorage.setItem("expansion-sensei", 'false');
         }
+      }
+
+      function setTimer() {
+        if (optionTimer.checked == true) {
+          window.localStorage.setItem("timer", 'true');
+        } else {
+          window.localStorage.setItem("timer", 'false');
+        }
+
+        if (window.localStorage.getItem("timer") == 'true') {
+          startTimer(60, timer);
+        } else {
+          stopTimer(timer);
+        }
+      }
+
+      function startTimer(duration, timerElement) {
+        var timer = duration, minutes, seconds;
+
+        timerElement.style.display = "block";
+        timerElement.classList.remove("orange");
+        timerElement.classList.remove("red");
+
+        clearInterval(timerCounter);
+
+        minutes = parseInt(timer / 60, 10)
+        seconds = parseInt(timer % 60, 10);
+
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        timerElement.textContent = minutes + ":" + seconds;
+
+        timerCounter = setInterval(function () {
+          minutes = parseInt((timer - 1) / 60, 10)
+          seconds = parseInt((timer - 1) % 60, 10);
+
+          seconds = seconds < 10 ? "0" + seconds : seconds;
+
+          timerElement.textContent = minutes + ":" + seconds;
+
+          if (--timer < 0) {
+            timer = duration;
+          }
+          if (timer < 19) {
+            timerElement.classList.add("orange");
+          }
+          if (timer < 9) {
+            timerElement.classList.remove("orange");
+            timerElement.classList.add("red");
+          }
+        }, 1000);
+      }
+
+      function stopTimer(timerElement) {
+        timerElement.style.display = "none";
+        clearInterval(timerCounter);
       }
 
       function renderCards() {
@@ -1016,11 +1144,13 @@
           var cards = [1,2,3,5,6];
           if (document.querySelector(".card[data-position='4']")) {
             document.querySelector(".card[data-position='4']").remove();
+            timer.dataset.position = "2";
           }
         } else {
           var cards = [1,2,4,5,6];
           if (document.querySelector(".card[data-position='3']")) {
             document.querySelector(".card[data-position='3']").remove();
+            timer.dataset.position = "1";
           }
         }
         cards.forEach((card, index) => {
@@ -1103,38 +1233,49 @@
         var card5 = document.querySelector(".card[data-position='5']");
         var card6 = document.querySelector(".card[data-position='6']");
 
+        timer.style.display = "none";
+        setTimer();
+
         if (position == 1) {
           if (undo == false) {
+            timer.dataset.position = "1";
             card1.dataset.position = 4;
             card3.dataset.position = 1;
           } else {
+            timer.dataset.position = "2";
             card4.dataset.position = 1;
             card1.dataset.position = 3;
           }
         }
         if (position == 2) {
           if (undo == false) {
+            timer.dataset.position = "1";
             card2.dataset.position = 4;
             card3.dataset.position = 2;
           } else {
+            timer.dataset.position = "2";
             card4.dataset.position = 2;
             card2.dataset.position = 3;
           }
         }
         if (position == 5) {
           if (undo == false) {
+            timer.dataset.position = "2";
             card5.dataset.position = 3;
             card4.dataset.position = 5;
           } else {
+            timer.dataset.position = "1";
             card3.dataset.position = 5;
             card5.dataset.position = 4;
           }
         }
         if (position == 6) {
           if (undo == false) {
+            timer.dataset.position = "2";
             card6.dataset.position = 3;
             card4.dataset.position = 6;
           } else {
+            timer.dataset.position = "1";
             card3.dataset.position = 6;
             card6.dataset.position = 4;
           }
@@ -1150,6 +1291,8 @@
           lastMovedCard.unshift(position);
         }
         undoButton.disabled = false;
+
+        timer.style.display = "block";
       }
 
       // Used to determine starting player
