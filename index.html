@@ -1074,7 +1074,7 @@
         }
 
         if (window.localStorage.getItem("timer") == 'true') {
-          startTimer(60, timer);
+          startTimer(2, timer);
         } else {
           stopTimer(timer);
         }
@@ -1097,23 +1097,26 @@
         timerElement.textContent = minutes + ":" + seconds;
 
         timerCounter = setInterval(function () {
-          minutes = parseInt((timer - 1) / 60, 10)
-          seconds = parseInt((timer - 1) % 60, 10);
+
+          if (timer <= 0) {
+            timer = 0;
+          } else {
+            --timer;
+          }
+
+          minutes = parseInt((timer) / 60, 10)
+          seconds = parseInt((timer) % 60, 10);
 
           seconds = seconds < 10 ? "0" + seconds : seconds;
 
-          timerElement.textContent = minutes + ":" + seconds;
-
-          if (--timer < 0) {
-            timer = duration;
-          }
-          if (timer < 19) {
+          if (timer < 10) {
             timerElement.classList.add("orange");
-          }
-          if (timer < 9) {
-            timerElement.classList.remove("orange");
             timerElement.classList.add("red");
+          } else if (timer < 20) {
+            timerElement.classList.remove("orange");
           }
+
+          timerElement.textContent = minutes + ":" + seconds;
         }, 1000);
       }
 
